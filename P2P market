@@ -1,0 +1,50 @@
+import React, { useState } from 'react';
+import { ethers } from 'ethers';
+import { WorldID } from '@worldcoin/id';
+
+const App = () => {
+    const [listingAmount, setListingAmount] = useState('');
+    const [listingPrice, setListingPrice] = useState('');
+
+    const worldId = new WorldID({
+        app_id: 'your_app_id',
+        action_id: 'p2p_marketplace'
+    });
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const contract = new ethers.Contract('YOUR_CONTRACT_ADDRESS', contractABI, signer);
+
+    const verifyAndCreateListing = async () => {
+        const isVerified = await worldId.verify();
+        if (!isVerified) {
+            alert('User verification failed');
+            return;
+        }
+
+        const tx = await contract.createListing(listingAmount, listingPrice);
+        await tx.wait();
+        alert('Listing created!');
+    };
+
+    return (
+        <div>
+            <h1>P2P Marketplace</h1>
+            <input
+                type="number"
+                placeholder="Amount of WLD tokens"
+                value={listingAmount}
+                onChange={(e) => setListingAmount(e.target.value)}
+            />
+            <input
+                type="number"
+                placeholder="Price per token (ETH)"
+                value={listingPrice}
+                onChange={(e) => setListingPrice(e.target.value)}
+            />
+            <button onClick={verifyAndCreateListing}>Create Listing</button>
+        </div>
+    );
+};
+
+export default App;
